@@ -110,36 +110,25 @@ st.title("Image Augmentation Tool")
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    try:
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), caption="Original Image", use_container_width=True)
-    except Exception as e:
-        st.error(f"Error loading image: {e}")
-        st.stop()
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), caption="Original Image", use_container_width=True)
 
     if st.button("Generate Augmented Images"):
-        try:
-            with st.spinner("Generating images..."):
-                augmented_imgs = augment_image(img)
+        with st.spinner("Generating images..."):
+            augmented_imgs = augment_image(img)
 
-                zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zip_file:
-                    for idx, im in enumerate(augmented_imgs):
-                        _, im_buf = cv2.imencode(".jpg", im)
-                        zip_file.writestr(f"augmented_{idx+1}.jpg", im_buf.tobytes())
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zip_file:
+                for idx, im in enumerate(augmented_imgs):
+                    _, im_buf = cv2.imencode(".jpg", im)
+                    zip_file.writestr(f"augmented_{idx+1}.jpg", im_buf.tobytes())
 
-                st.success(f"Generated {len(augmented_imgs)} images!")
-                zip_buffer.seek(0)
-                st.download_button(
-                    label="Download augmented images as ZIP",
-                    data=zip_buffer,
-                    file_name="augmented_images.zip",
-                    mime="application/zip"
-                )
-                # Show a few previews
-                st.subheader("Sample Augmented Images")
-                for preview_img in augmented_imgs[:5]:
-                    st.image(cv2.cvtColor(preview_img, cv2.COLOR_BGR2RGB), width=150)
-        except Exception as e:
-            st.error(f"Error during augmentation: {e}")
+            st.success(f"Generated {len(augmented_imgs)} images!")
+            zip_buffer.seek(0)
+            st.download_button(
+                label="Download augmented images as ZIP",
+                data=zip_buffer,
+                file_name="augmented_images.zip",
+                mime="application/zip"
+            )
